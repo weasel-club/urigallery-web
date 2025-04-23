@@ -1,0 +1,4 @@
+onlyBuiltDependencies:
+  - msgpackr-extract
+  - msw
+  - sharp

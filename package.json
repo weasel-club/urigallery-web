@@ -1,0 +1,52 @@
+{
+  "name": "album",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "start": "next dev --turbopack --hostname 0.0.0.0",
+    "build": "next build",
+    "start:prod": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@radix-ui/react-dialog": "^1.1.11",
+    "@radix-ui/react-slot": "^1.2.0",
+    "@uidotdev/usehooks": "^2.4.1",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "construct-js": "^1.0.1",
+    "lucide-react": "^0.503.0",
+    "moment": "^2.30.1",
+    "msgpackr": "^1.11.2",
+    "next": "15.3.1",
+    "next-themes": "^0.4.6",
+    "peerjs": "^1.5.4",
+    "progress-stream": "^2.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "remeda": "^2.21.3",
+    "simple-peer": "^9.11.1",
+    "socket.io": "^4.8.1",
+    "socket.io-p2p-server": "^1.2.0",
+    "sonner": "^2.0.3",
+    "stream-to-promise": "^3.0.0",
+    "tailwind-merge": "^3.2.0",
+    "usehooks-ts": "^3.1.1",
+    "zod": "^3.24.3",
+    "zustand": "^5.0.3"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/progress-stream": "^2.0.5",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@types/simple-peer": "^9.11.8",
+    "@types/stream-to-promise": "^2.2.4",
+    "hono": "^4.7.8",
+    "shadcn": "^2.5.0",
+    "tailwindcss": "^4",
+    "tw-animate-css": "^1.2.8",
+    "typescript": "^5"
+  }
+}
