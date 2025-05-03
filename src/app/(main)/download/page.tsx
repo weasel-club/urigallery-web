@@ -1,14 +1,11 @@
 "use client";
 
 import { useHeaderSize } from "@/components/header";
-import image1 from "./1.png";
-import image2 from "./2.png";
 
 import Container from "@/components/container";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Download } from "lucide-react";
-import Image from "next/image";
 
 export default function DownloadPage() {
   const { height } = useHeaderSize();
@@ -29,7 +26,7 @@ export default function DownloadPage() {
       <Container
         className="flex flex-col items-center justify-center gap-4"
         style={{
-          height: `calc(100vh - ${height}px)`,
+          minHeight: `calc(100vh - ${height}px)`,
         }}
       >
         <h1 className="text-2xl font-bold mt-12">다운로드</h1>
@@ -72,10 +69,12 @@ export default function DownloadPage() {
           ))}
         </div>
 
-        <h1 className="text-2xl font-bold mt-12">사용법</h1>
-        <Image src={image1} alt="1" />
+        <h1 className="text-2xl font-bold mt-12">사용법 (동영상)</h1>
+        <video src="/tutorial/video.mp4" autoPlay muted loop />
+        <h1 className="text-2xl font-bold mt-12">사용법 (이미지)</h1>
+        <img src="/tutorial/1.png" alt="1" />
         <div>다운로드 후 exe 파일을 폴더에 옮겨서 실행</div>
-        <Image src={image2} alt="2" />
+        <img src="/tutorial/2.png" alt="2" />
         <div>
           트레이 아이콘을 오른쪽 클릭 후 OTP 복사를 클릭하여 OTP를 복사 후 메인
           페이지에서 입력
