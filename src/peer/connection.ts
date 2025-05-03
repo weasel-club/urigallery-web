@@ -1,3 +1,4 @@
+import { errorSchema } from "@/api";
 import { Binary } from "@/binary";
 import {
   Chunk,
@@ -12,6 +13,7 @@ import { randomBytes } from "crypto";
 import { encode } from "msgpackr";
 import SimplePeer from "simple-peer";
 import { PassThrough } from "stream";
+import { z } from "zod";
 import { create } from "zustand";
 
 type Channel = {
@@ -35,10 +37,12 @@ export const useChannel = create<Channel>((set, get) => {
     };
   }
 
-  const request = async (type: string, data?: any): Promise<Response> => {
-    const peer = get().peer;
-    const connected = get().connected;
-    if (!peer || !connected) {
+  const request = async (
+    peer: SimplePeer.Instance | null,
+    type: string,
+    data?: any
+  ): Promise<Response> => {
+    if (!peer) {
       throw new Error("Not connected");
     }
 
@@ -199,6 +203,19 @@ export const useChannel = create<Channel>((set, get) => {
       });
     });
 
+    const versionResponse = await request(peer, "getVersion");
+    const code = await versionResponse.code();
+    if (code > 0) {
+      const error = await versionResponse.object(errorSchema);
+      throw new Error(error.error);
+    }
+
+    const version = await versionResponse.object(
+      z.object({
+        version: z.number(),
+      })
+    );
+
     set({ peer, connected: true });
 
     // Start heartbeat
@@ -215,6 +232,6 @@ export const useChannel = create<Channel>((set, get) => {
     peer: null,
     connected: false,
     connect,
-    request,
+    request: (type, data) => request(get().peer, type, data),
   };
 });

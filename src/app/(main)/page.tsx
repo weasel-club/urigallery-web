@@ -65,12 +65,7 @@ export default function Home() {
           </div>
         </div>
       ) : (
-        <div>
-          <Button onClick={clearToken} className="mb-4">
-            Logout
-          </Button>
-          <Images />
-        </div>
+        <Images />
       )}
     </Container>
   );
