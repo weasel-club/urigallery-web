@@ -17,16 +17,12 @@ export default function DownloadPage() {
     {
       platform: "Windows",
       path: "/downloads/urigallery-win.zip",
-      size: 11643392,
-      hash: "e9a4102da631ef108e282808048f4354ef6cd964c95da0c4bc140f36cf56aacb",
-      virusTotalUrl: "https://", // 추후 바이러스 토탈 URL 추가
+      size: "11.10MB",
+      hash: "60e63ab4387f8925492d2ce3deb4b5c6e2d1e2e7c4335c24035c682c86f2f5c3",
+      virusTotalUrl:
+        "https://www.virustotal.com/gui/file/60e63ab4387f8925492d2ce3deb4b5c6e2d1e2e7c4335c24035c682c86f2f5c3", // 추후 바이러스 토탈 URL 추가
     },
   ];
-
-  const formatFileSize = (bytes: number) => {
-    const mb = bytes / (1024 * 1024);
-    return `${mb.toFixed(2)} MB`;
-  };
 
   return (
     height > 0 && (
@@ -48,7 +44,7 @@ export default function DownloadPage() {
                 <div className="flex justify-between items-center">
                   <div className="space-y-1">
                     <p className="text-sm text-muted-foreground">
-                      실행 파일 크기: {formatFileSize(download.size)}
+                      실행 파일 크기: {download.size}
                     </p>
                     <p className="text-sm text-muted-foreground">
                       SHA-256: {download.hash}
