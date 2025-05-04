@@ -2,6 +2,7 @@ import Img from "@/components/img";
 import { Image } from "@/data/image";
 import { cn } from "@/lib/utils";
 import { Dialog, DialogContent, DialogTitle } from "@radix-ui/react-dialog";
+import commaNumber from "comma-number";
 import { Download, X } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
@@ -51,8 +52,6 @@ export function ImageDialog({
     setCurrentImage(images[index - 1]);
   }, [images, index]);
 
-  const nextImageElement = useRef<HTMLDivElement>(null);
-  const previousImageElement = useRef<HTMLDivElement>(null);
   const [imageX, setImageX] = useState(0);
   const [imageY, setImageY] = useState(0);
 
@@ -68,17 +67,29 @@ export function ImageDialog({
       let clickStartY = 0;
       let draggingX = false;
       let draggingY = false;
+      let deltaX = 0;
+      let deltaY = 0;
 
-      const onClickStart = (e: MouseEvent) => {
+      const onClickStart = (e: MouseEvent | TouchEvent) => {
         clicking = true;
-        clickStartX = e.clientX;
-        clickStartY = e.clientY;
+        clickStartX =
+          e instanceof MouseEvent ? e.clientX : e.touches[0].clientX;
+        clickStartY =
+          e instanceof MouseEvent ? e.clientY : e.touches[0].clientY;
+        deltaX = 0;
+        deltaY = 0;
       };
 
-      const onClickMove = (e: MouseEvent) => {
+      const onClickMove = (e: MouseEvent | TouchEvent) => {
         if (!clicking) return;
-        const deltaX = e.clientX - clickStartX;
-        const deltaY = e.clientY - clickStartY;
+        deltaX =
+          e instanceof MouseEvent
+            ? e.clientX - clickStartX
+            : e.touches[0].clientX - clickStartX;
+        deltaY =
+          e instanceof MouseEvent
+            ? e.clientY - clickStartY
+            : e.touches[0].clientY - clickStartY;
         if (!draggingY && Math.abs(deltaX) > 10) {
           draggingX = true;
           setImageX(deltaX / 2);
@@ -89,11 +100,8 @@ export function ImageDialog({
         }
       };
 
-      const onClickEnd = (e: MouseEvent) => {
+      const onClickEnd = () => {
         clicking = false;
-        const deltaX = e.clientX - clickStartX;
-        const deltaY = e.clientY - clickStartY;
-
         if (draggingX && deltaX > 10) previousImage();
         if (draggingX && deltaX < -10) nextImage();
         if (draggingY && deltaY < -10) onOpenChange(false);
@@ -103,13 +111,19 @@ export function ImageDialog({
 
       dialogRef.current.addEventListener("keydown", onKeydown);
       dialogRef.current.addEventListener("mousedown", onClickStart);
+      dialogRef.current.addEventListener("touchstart", onClickStart);
       dialogRef.current.addEventListener("mousemove", onClickMove);
+      dialogRef.current.addEventListener("touchmove", onClickMove);
       dialogRef.current.addEventListener("mouseup", onClickEnd);
+      dialogRef.current.addEventListener("touchend", onClickEnd);
       return () => {
         dialogRef.current?.removeEventListener("keydown", onKeydown);
         dialogRef.current?.removeEventListener("mousedown", onClickStart);
+        dialogRef.current?.removeEventListener("touchstart", onClickStart);
         dialogRef.current?.removeEventListener("mousemove", onClickMove);
+        dialogRef.current?.removeEventListener("touchmove", onClickMove);
         dialogRef.current?.removeEventListener("mouseup", onClickEnd);
+        dialogRef.current?.removeEventListener("touchend", onClickEnd);
       };
     }
   }, [dialogRef.current, nextImage, previousImage]);
@@ -124,9 +138,9 @@ export function ImageDialog({
          flex items-center justify-center"
       >
         <DialogTitle className="hidden"></DialogTitle>
-        <div className="w-full h-full pointer-events-none">
+        <div className="w-full h-full">
           <div
-            className="w-calc(100%-2rem) h-[calc(100%-2rem-8rem)] absolute z-10 top-8 left-4 right-4"
+            className="w-calc(100%-2rem) h-[calc(100%-3rem-8rem)] absolute z-10 top-12 left-4 right-4 pointer-events-none"
             style={{
               transform: `translateX(${imageX}px) translateY(${imageY}px)`,
             }}
@@ -141,29 +155,32 @@ export function ImageDialog({
             )}
           </div>
 
-          <div className="h-64 z-0 flex items-end absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent">
+          <div className="h-64 z-0 flex items-end absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent ">
             <div className="w-full h-[8rem] text-white text-sm flex flex-col gap-2 justify-center p-2">
               <div className="flex flex-row items-center justify-center">
-                {index + 1}/{images.length}
+                {commaNumber(index + 1)}/{commaNumber(images.length)}
               </div>
               <div className="flex flex-row gap-2 items-center justify-center">
                 {previewingImages.map((i) => (
                   <Img
                     key={`preview-${i.path}`}
                     className={cn(
-                      "size-16 object-cover rounded transition",
+                      "size-16 object-cover rounded",
                       i === currentImage && "scale-110"
                     )}
                     name={i.name}
                     path={i.path}
                     size={450}
+                    onClick={() => {
+                      setCurrentImage(i);
+                    }}
                   />
                 ))}
               </div>
             </div>
           </div>
         </div>
-        <div className="absolute right-4 top-4 flex flex-row gap-2">
+        <div className="absolute right-2 top-2 flex flex-row gap-2">
           <button
             className="text-white"
             onClick={() => {
@@ -175,10 +192,10 @@ export function ImageDialog({
               URL.revokeObjectURL(a.href);
             }}
           >
-            <Download />
+            <Download className="size-6" />
           </button>
           <button className="text-white" onClick={() => onOpenChange(false)}>
-            <X></X>
+            <X className="size-6"></X>
           </button>
         </div>
       </DialogContent>

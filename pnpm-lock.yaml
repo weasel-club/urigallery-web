@@ -23,6 +23,9 @@ importers:
       clsx:
         specifier: ^2.1.1
         version: 2.1.1
+      comma-number:
+        specifier: ^2.1.0
+        version: 2.1.0
       construct-js:
         specifier: ^1.0.1
         version: 1.0.1
@@ -93,6 +96,9 @@ importers:
       '@tailwindcss/postcss':
         specifier: ^4
         version: 4.1.4
+      '@types/comma-number':
+        specifier: ^2.1.2
+        version: 2.1.2
       '@types/node':
         specifier: ^20
         version: 20.17.30
@@ -800,6 +806,9 @@ packages:
   '@ts-morph/common@0.19.0':
     resolution: {integrity: sha512-Unz/WHmd4pGax91rdIKWi51wnVUW11QttMEPpBiBgIewnc9UQIX7UDLxr5vRlqeByXCwhkF6VabSsI0raWcyAQ==}
 
+  '@types/comma-number@2.1.2':
+    resolution: {integrity: sha512-jXqm98xOXsZtuFAmqDdPZNPHgLE3fWjA/UbMG77daB9SdS8SX315vK8OQQiCRJVRKE2aEtxVe8kJLyD34P53uw==}
+
   '@types/cookie@0.6.0':
     resolution: {integrity: sha512-4Kh9a6B2bQciAhf7FSuMRRkUWecJgJu9nPnx3yzpsfXX/c50REIqpHY4C82bXP90qrLtXtkDxTZosYO3UpOwlA==}
 
@@ -989,6 +998,9 @@ packages:
   color@4.2.3:
     resolution: {integrity: sha512-1rXeuUUiGGrykh+CeBdu5Ie7OJwinCgQY0bc7GCRxy5xVHy+moaqkpL/jqQq0MtQOeYcrqEz4abc5f0KtU7W4A==}
     engines: {node: '>=12.5.0'}
+
+  comma-number@2.1.0:
+    resolution: {integrity: sha512-fRcu1c+4yFLFp3tgranEkKPPWRlnkWQXr4p0KBL0WW9Kd2wmbKAoQ2R4rluFm4ubXCtXGybEaFB7r6YgPOnahQ==}
 
   commander@0.6.1:
     resolution: {integrity: sha512-0fLycpl1UMTGX257hRsu/arL/cUbcvQM4zMKwvLvzXtfdezIV4yotPS2dYtknF+NmEfWSoCEF6+hj9XLm/6hEw==}
@@ -2814,6 +2826,8 @@ snapshots:
       mkdirp: 2.1.6
       path-browserify: 1.0.1
 
+  '@types/comma-number@2.1.2': {}
+
   '@types/cookie@0.6.0': {}
 
   '@types/cors@2.8.17':
@@ -2997,6 +3011,8 @@ snapshots:
       color-convert: 2.0.1
       color-string: 1.9.1
     optional: true
+
+  comma-number@2.1.0: {}
 
   commander@0.6.1: {}
 
