@@ -20,7 +20,6 @@ export default function ImageGroup({
 }) {
   const { ref, isIntersecting } = useIntersectionObserver({
     rootMargin: "0px",
-    threshold: 0.1,
   });
   const [onVisibleCalled, setOnVisibleCalled] = useState(false);
 

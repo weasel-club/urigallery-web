@@ -84,7 +84,7 @@ export default function Gallery() {
             title={key}
             images={images}
             onVisible={() => {
-              if (showingImageKeys <= i + 1) {
+              if (showingImageKeys < i + 2) {
                 setShowingImageKeys(i + 2);
               }
             }}
