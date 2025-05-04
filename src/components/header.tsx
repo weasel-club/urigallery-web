@@ -2,6 +2,7 @@
 
 import Container from "@/components/container";
 import { cn } from "@/lib/utils";
+import { useChannel } from "@/peer/connection";
 import { useAuthStore } from "@/signal/auth";
 import { Download, Image, LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -40,6 +41,7 @@ export const useHeaderSize = create<{
 
 export default function Header() {
   const { token, clearToken } = useAuthStore();
+  const { disconnect } = useChannel();
   const router = useRouter();
 
   const { setHeight } = useHeaderSize();
@@ -78,7 +80,12 @@ export default function Header() {
         Download PC Client
       </Button>
       {token && (
-        <Button onClick={() => clearToken()}>
+        <Button
+          onClick={() => {
+            clearToken();
+            disconnect();
+          }}
+        >
           <LogOut className="size-4" />
           Disconnect
         </Button>

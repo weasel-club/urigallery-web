@@ -12,6 +12,7 @@ import { signalClient } from "@/signal/client";
 import { randomBytes } from "crypto";
 import { encode } from "msgpackr";
 import SimplePeer from "simple-peer";
+import { toast } from "sonner";
 import { PassThrough } from "stream";
 import { z } from "zod";
 import { create } from "zustand";
@@ -21,6 +22,7 @@ type Channel = {
   connected: boolean;
   request: (type: string, data?: any) => Promise<Response>;
   connect: () => Promise<void>;
+  disconnect: () => void;
 };
 
 export const useChannel = create<Channel>((set, get) => {
@@ -34,8 +36,17 @@ export const useChannel = create<Channel>((set, get) => {
       connect: async () => {
         throw new Error("Not supported on server");
       },
+      disconnect: () => {
+        throw new Error("Not supported on server");
+      },
     };
   }
+
+  const onClose = async () => {
+    set({ peer: null, connected: false });
+    toast.error("Connection lost, reconnecting...");
+    await connect();
+  };
 
   const request = async (
     peer: SimplePeer.Instance | null,
@@ -159,10 +170,7 @@ export const useChannel = create<Channel>((set, get) => {
     });
 
     peer.setMaxListeners(0);
-
-    peer.once("close", () => {
-      set({ peer: null, connected: false });
-    });
+    peer.once("close", onClose);
 
     const sdp = await new Promise<string>((resolve, reject) => {
       peer.on("signal", (data) => {
@@ -230,10 +238,37 @@ export const useChannel = create<Channel>((set, get) => {
     });
   };
 
+  const connectWithRetry = async () => {
+    let delay = 1;
+    while (true) {
+      try {
+        await connect();
+        break;
+      } catch (error) {
+        toast.error(`Failed to connect, retrying in ${delay} seconds`);
+        delay *= 2;
+        await new Promise((resolve) => setTimeout(resolve, delay * 1000));
+        if (delay > 16) {
+          throw new Error("Failed to connect");
+        }
+      }
+    }
+  };
+
+  const disconnect = () => {
+    const peer = get().peer;
+    if (peer) {
+      peer.off("close", onClose);
+      peer.destroy();
+      set({ peer: null, connected: false });
+    }
+  };
+
   return {
     peer: null,
     connected: false,
-    connect,
+    connect: connectWithRetry,
     request: (type, data) => request(get().peer, type, data),
+    disconnect,
   };
 });

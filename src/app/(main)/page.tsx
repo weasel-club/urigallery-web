@@ -67,7 +67,14 @@ export default function Home() {
             >
               Retry
             </Button>
-            <Button onClick={() => clearToken()}>Disconnect</Button>
+            <Button
+              onClick={() => {
+                clearToken();
+                channel.disconnect();
+              }}
+            >
+              Disconnect
+            </Button>
           </div>
         </div>
       ) : (
