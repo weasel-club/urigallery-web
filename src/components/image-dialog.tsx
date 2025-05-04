@@ -185,9 +185,12 @@ export function ImageDialog({
             className="text-white"
             onClick={() => {
               if (!currentImageBlob || !currentImage) return;
-              const url = URL.createObjectURL(currentImageBlob);
-              window.open(url, "_blank");
-              URL.revokeObjectURL(url);
+              const a = document.createElement("a");
+              a.href = URL.createObjectURL(currentImageBlob);
+              a.download = currentImage.name;
+              a.target = "_blank";
+              a.click();
+              URL.revokeObjectURL(a.href);
             }}
           >
             <Download className="size-6" />
