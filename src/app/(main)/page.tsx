@@ -1,6 +1,6 @@
 "use client";
 
-import Images from "@/app/(main)/images";
+import Gallery from "@/app/(main)/gallery";
 import Container from "@/components/container";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
@@ -10,20 +10,26 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 
 export default function Home() {
-  const { token, clearToken } = useAuthStore();
+  const { token, setToken, clearToken } = useAuthStore();
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const channel = useChannel();
 
   const [connectionError, setConnectionError] = useState<string | null>(null);
+
   useEffect(() => {
     if (!token) {
-      router.push("/auth");
+      const savedToken = window.localStorage.getItem("token");
+      if (savedToken) {
+        setToken(savedToken);
+      } else {
+        router.push("/auth");
+      }
     }
-  }, [token, router]);
+  }, [token, setToken, router]);
 
   const connect = useCallback(async () => {
-    if (!token) return;
+    if (!token || channel.connected) return;
     setLoading(true);
     try {
       await channel.connect();
@@ -37,11 +43,11 @@ export default function Home() {
     } finally {
       setLoading(false);
     }
-  }, [channel, token]);
+  }, [token, channel.connected]);
 
   useEffect(() => {
     connect();
-  }, []);
+  }, [connect]);
 
   return (
     <Container className="flex flex-col items-stretch justify-center min-h-screen py-2">
@@ -65,7 +71,7 @@ export default function Home() {
           </div>
         </div>
       ) : (
-        <Images />
+        <Gallery />
       )}
     </Container>
   );

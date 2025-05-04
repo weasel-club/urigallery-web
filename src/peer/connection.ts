@@ -210,11 +210,13 @@ export const useChannel = create<Channel>((set, get) => {
       throw new Error(error.error);
     }
 
-    const version = await versionResponse.object(
+    const { version } = await versionResponse.object(
       z.object({
         version: z.number(),
       })
     );
+
+    console.log(`version: ${version}`);
 
     set({ peer, connected: true });
 

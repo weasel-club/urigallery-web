@@ -22,7 +22,7 @@ export default function Img({
   onLoad?: (blob: Blob) => void;
 }) {
   const [image, setImage] = useState<Blob | null>(null);
-  const [loadStarted, setLoadStarted] = useState(false);
+  const [loadedPath, setLoadedPath] = useState<string | null>(null);
   const channel = useChannel();
 
   const { ref, isIntersecting } = useIntersectionObserver({
@@ -48,13 +48,15 @@ export default function Img({
 
   useEffect(() => {
     (async () => {
-      if (!isIntersecting || loadStarted) return;
-      setLoadStarted(true);
-      const image = await loadImage(size ? Math.floor(size * 1.5) : undefined);
+      if (!isIntersecting || loadedPath === path) return;
+      setLoadedPath(path);
+      setImage(null);
+
+      const image = await loadImage(size ? Math.floor(size) : undefined);
       setImage(image);
       onLoad?.(image);
     })();
-  }, [path, channel, isIntersecting, loadStarted]);
+  }, [path, channel, isIntersecting, loadedPath]);
 
   const [url, setUrl] = useState<string | null>(null);
 
@@ -71,6 +73,8 @@ export default function Img({
       return () => {
         URL.revokeObjectURL(url);
       };
+    } else {
+      setUrl(null);
     }
   }, [image, placeholder]);
 
@@ -87,6 +91,6 @@ export default function Img({
       alt={name}
     />
   ) : (
-    <div ref={ref} className={cn("bg-gray-100", className)}></div>
+    <div ref={ref} className={cn(className)}></div>
   );
 }

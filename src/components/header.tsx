@@ -69,6 +69,7 @@ export default function Header() {
       </Button>
       <div className="flex-1"></div>
       <Button
+        className="max-sm:hidden"
         onClick={() => {
           router.push("/download");
         }}

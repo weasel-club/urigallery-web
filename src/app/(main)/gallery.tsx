@@ -1,68 +1,100 @@
-import Img from "@/components/img";
-import { Image } from "@/data/image";
-import { cn } from "@/lib/utils";
+import { errorSchema } from "@/api";
+import ImageGroup from "@/app/(main)/image-group";
+import { ImageDialog } from "@/components/image-dialog";
+import { Image, imageSchema } from "@/data/image";
+import { useChannel } from "@/peer/connection";
 import moment from "moment";
-import { useEffect, useState } from "react";
-import { useIntersectionObserver } from "usehooks-ts";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
+import { z } from "zod";
 
-export default function Gallery({
-  title,
-  images,
-  onVisible,
-  onImageClick,
-  onImageLoad,
-}: {
-  title: string;
-  images: Image[];
-  onVisible?: () => void;
-  onImageClick?: (image: Image) => void;
-  onImageLoad?: (image: Image, blob: Blob) => void;
-}) {
-  const { ref, isIntersecting } = useIntersectionObserver({
-    rootMargin: "0px",
-    threshold: 0.1,
-  });
-  const [onVisibleCalled, setOnVisibleCalled] = useState(false);
+export default function Gallery() {
+  const channel = useChannel();
 
-  useEffect(() => {
-    if (onVisibleCalled) return;
-    if (isIntersecting) {
-      onVisible?.();
-      setOnVisibleCalled(true);
+  const [images, setImages] = useState<Image[]>([]);
+
+  const loadImages = useCallback(async () => {
+    const response = await channel.request("listImages");
+
+    const code = await response.code();
+    if (code > 0) {
+      const error = await response.object(errorSchema);
+      console.log(error);
+
+      toast.error(error.error);
+      return;
     }
-  }, [isIntersecting, onVisible, onVisibleCalled]);
+
+    const { images } = await response.object(
+      z.object({
+        images: z.array(imageSchema),
+      })
+    );
+
+    setImages(images.sort((a, b) => b.createdAt - a.createdAt));
+  }, [channel]);
+
+  const groupImagesByDate = (images: Image[]) => {
+    const map = new Map<string, Image[]>();
+    for (const image of images) {
+      const date = moment(image.createdAt);
+      let key: string;
+      if (date.isBefore(moment().subtract(1, "month"))) {
+        key = date.format("YYYY-MM");
+      } else if (date.isBefore(moment().subtract(1, "day"))) {
+        key = date.format("YYYY-MM-DD");
+      } else {
+        key = "Today";
+      }
+
+      map.set(key, [...(map.get(key) || []), image]);
+    }
+
+    return map;
+  };
+
+  const imagesByDate = useMemo(() => groupImagesByDate(images), [images]);
+  const [showingImageKeys, setShowingImageKeys] = useState<number>(1);
+  const showingImages = useMemo(
+    () => Array.from(imagesByDate.entries()).slice(0, showingImageKeys),
+    [imagesByDate, showingImageKeys]
+  );
+
+  const [displayingImage, setDisplayingImage] = useState<Image | null>(null);
+  const [imageDialogOpen, setImageDialogOpen] = useState(false);
+  useEffect(() => {
+    if (channel.connected) {
+      loadImages();
+    }
+  }, [channel.connected, loadImages]);
 
   return (
-    <div key={`image-group-${title}`} ref={ref}>
-      <h3 className="text-lg font-black mb-2">{title}</h3>
-      <div className="flex flex-wrap gap-2 mb-4">
-        {images.map((image) => {
-          const isToday = moment(image.createdAt).isAfter(
-            moment().subtract(1, "day")
-          );
+    images.length > 0 && (
+      <div>
+        <ImageDialog
+          image={displayingImage}
+          images={images}
+          open={imageDialogOpen}
+          onOpenChange={setImageDialogOpen}
+        />
 
-          return (
-            <div
-              key={image.path}
-              className={cn(
-                "overflow-hidden rounded",
-                isToday
-                  ? "size-[calc(100%/3-0.5rem/3*2)] max-sm:size-[calc(100%/4-0.5rem/4*3)] aspect-square"
-                  : "size-[calc(100%/4-0.5rem/4*3)] max-sm:size-[calc(100%/5-0.5rem/5*4)] aspect-square"
-              )}
-            >
-              <Img
-                path={image.path}
-                name={image.name}
-                size={isToday ? 500 : 300}
-                className="object-cover object-center size-full"
-                onClick={() => onImageClick?.(image)}
-                onLoad={(blob) => onImageLoad?.(image, blob)}
-              />
-            </div>
-          );
-        })}
+        {showingImages.map(([key, images], i) => (
+          <ImageGroup
+            key={key}
+            title={key}
+            images={images}
+            onVisible={() => {
+              if (showingImageKeys <= i + 1) {
+                setShowingImageKeys(i + 2);
+              }
+            }}
+            onImageClick={(image) => {
+              setDisplayingImage(image);
+              setImageDialogOpen(true);
+            }}
+          />
+        ))}
       </div>
-    </div>
+    )
   );
 }
