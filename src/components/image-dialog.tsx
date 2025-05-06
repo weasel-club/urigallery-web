@@ -94,7 +94,7 @@ export function ImageDialog({
           draggingX = true;
           setImageX(deltaX / 2);
         }
-        if (!draggingX && deltaY < -10) {
+        if (!draggingX && Math.abs(deltaY) > 10) {
           draggingY = true;
           setImageY(deltaY / 2);
         }
@@ -102,31 +102,63 @@ export function ImageDialog({
 
       const onClickEnd = () => {
         clicking = false;
-        if (draggingX && deltaX > 10) previousImage();
-        if (draggingX && deltaX < -10) nextImage();
-        if (draggingY && deltaY < -10) onOpenChange(false);
-        setImageX(0);
-        setImageY(0);
+        if (draggingX && deltaX > 20) previousImage();
+        if (draggingX && deltaX < -20) nextImage();
+        if (draggingY && Math.abs(deltaY) > 20) onOpenChange(false);
+        draggingX = false;
+        draggingY = false;
+        setTimeout(() => {
+          setImageX(0);
+          setImageY(0);
+        }, 0);
+      };
+
+      const onDrag = (e: DragEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
       };
 
       dialogRef.current.addEventListener("keydown", onKeydown);
+      // Mouse
       dialogRef.current.addEventListener("mousedown", onClickStart);
-      dialogRef.current.addEventListener("touchstart", onClickStart);
       dialogRef.current.addEventListener("mousemove", onClickMove);
-      dialogRef.current.addEventListener("touchmove", onClickMove);
       dialogRef.current.addEventListener("mouseup", onClickEnd);
+      // Drag
+      dialogRef.current.addEventListener("dragstart", onDrag);
+      dialogRef.current.addEventListener("drag", onDrag);
+      dialogRef.current.addEventListener("dragend", onDrag);
+
+      // Touch
+      dialogRef.current.addEventListener("touchstart", onClickStart);
+      dialogRef.current.addEventListener("touchmove", onClickMove);
       dialogRef.current.addEventListener("touchend", onClickEnd);
       return () => {
         dialogRef.current?.removeEventListener("keydown", onKeydown);
+
+        // Mouse
         dialogRef.current?.removeEventListener("mousedown", onClickStart);
-        dialogRef.current?.removeEventListener("touchstart", onClickStart);
         dialogRef.current?.removeEventListener("mousemove", onClickMove);
-        dialogRef.current?.removeEventListener("touchmove", onClickMove);
         dialogRef.current?.removeEventListener("mouseup", onClickEnd);
+        // Drag
+        dialogRef.current?.removeEventListener("dragstart", onDrag);
+        dialogRef.current?.removeEventListener("drag", onDrag);
+        dialogRef.current?.removeEventListener("dragend", onDrag);
+        // Touch
+        dialogRef.current?.removeEventListener("touchstart", onClickStart);
+        dialogRef.current?.removeEventListener("touchmove", onClickMove);
         dialogRef.current?.removeEventListener("touchend", onClickEnd);
       };
     }
   }, [dialogRef.current, nextImage, previousImage]);
+
+  // Disable scroll when dialog is open
+  useEffect(() => {
+    if (open) {
+      document.body.classList.add("disable-scroll");
+    } else {
+      document.body.classList.remove("disable-scroll");
+    }
+  }, [open]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -140,7 +172,7 @@ export function ImageDialog({
         <DialogTitle className="hidden"></DialogTitle>
         <div className="w-full h-full">
           <div
-            className="w-calc(100%-2rem) h-[calc(100%-3rem-8rem)] absolute z-10 top-12 left-4 right-4 pointer-events-none"
+            className="w-calc(100%-2rem) h-[calc(100%-4rem-8rem)] absolute z-10 top-16 left-4 right-4 cursor-pointer"
             style={{
               transform: `translateX(${imageX}px) translateY(${imageY}px)`,
             }}
@@ -162,27 +194,31 @@ export function ImageDialog({
               </div>
               <div className="flex flex-row gap-2 items-center justify-center">
                 {previewingImages.map((i) => (
-                  <Img
+                  <button
                     key={`preview-${i.path}`}
-                    className={cn(
-                      "size-16 object-cover rounded",
-                      i === currentImage && "scale-110"
-                    )}
-                    name={i.name}
-                    path={i.path}
-                    size={450}
+                    className="size-16"
                     onClick={() => {
                       setCurrentImage(i);
                     }}
-                  />
+                  >
+                    <Img
+                      className={cn(
+                        "size-16 object-cover rounded",
+                        i === currentImage && "scale-110"
+                      )}
+                      name={i.name}
+                      path={i.path}
+                      size={450}
+                    />
+                  </button>
                 ))}
               </div>
             </div>
           </div>
         </div>
-        <div className="absolute right-2 top-2 flex flex-row gap-2">
+        <div className="absolute right-4 top-4 flex flex-row gap-2">
           <button
-            className="text-white"
+            className="text-white cursor-pointer"
             onClick={() => {
               if (!currentImageBlob || !currentImage) return;
               const a = document.createElement("a");
@@ -195,7 +231,10 @@ export function ImageDialog({
           >
             <Download className="size-6" />
           </button>
-          <button className="text-white" onClick={() => onOpenChange(false)}>
+          <button
+            className="text-white cursor-pointer"
+            onClick={() => onOpenChange(false)}
+          >
             <X className="size-6"></X>
           </button>
         </div>
